@@ -14,6 +14,7 @@ class ConanProxy:
         self._cache = conan_app.cache
         self._remote_manager = conan_app.remote_manager
         self._resolved = {}  # Cache of the requested recipes to optimize calls
+        self._legacy_update = conan_app.global_conf.get("core:legacy_update_mode", False)
 
     def get_recipe(self, ref, remotes, update, check_update):
         """
@@ -108,7 +109,7 @@ class ConanProxy:
                     ref = self._remote_manager.get_latest_recipe_reference(reference, remote)
                 else:
                     ref = self._remote_manager.get_recipe_revision_reference(reference, remote)
-                if not should_update_reference(reference, update) and not check_update:
+                if self._legacy_update or (not should_update_reference(reference, update) and not check_update):
                     return remote, ref
                 results.append({'remote': remote, 'ref': ref})
             except NotFoundException:
